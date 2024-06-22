@@ -1,16 +1,14 @@
-import { BrowserContext, chromium, } from 'playwright';
+import { chromium, } from 'playwright';
 import { JSDOM } from 'jsdom';
 import { writeFile, mkdir } from 'fs/promises'
-import { appendFileSync } from 'fs';
 import { join } from 'node:path';
 
 const browser = await chromium.launch();
 const context = await browser.newContext();
 
 const urls = await geturls(process.argv[2]!);
-console.log(urls);
 for (const url of urls) {
-    console.log("downloading:", url)
+    console.log("downloading:", url.toString())
     const songinfo = await getsonginfo(url);
     await writesonginfo(songinfo);
 }
@@ -32,10 +30,9 @@ type SongInfo = {
 async function geturls(q: string) {
 
     const url = new URL(q, "https://songle.jp/artists/");
-    console.log(url);
+    // console.log(url);
     const page = await context.newPage();
     await page.goto(url.toString());
-    await page.waitForTimeout(1000);
     const html = new JSDOM(await page.content());
     // console.log(html.window.document.body.outerHTML);
     const anchorelements = html.window.document.querySelectorAll("a.song");
@@ -47,7 +44,7 @@ async function geturls(q: string) {
 async function getsonginfo(url: URL) {
     const page = await context.newPage();
     await page.goto(url.toString());
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(200);
     const html = new JSDOM(await page.content());
     const { document } = html.window;
     const title = document.getElementsByClassName("song-name")[0].textContent!;
